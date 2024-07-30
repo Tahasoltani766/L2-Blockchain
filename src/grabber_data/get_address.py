@@ -49,13 +49,6 @@ def insert_address(addr: str):
     cursor.execute(sqlite_insert_query, (addr,))
     conn.commit()
 
-
-def get_balance(address, block_num):
-    balance = w3.eth.get_balance(Web3.to_checksum_address(address), block_num)
-    array = np.array([
-        (address, balance,block_num),
-    ],dtype=dtype)
-    np.vstack([result_array, array])
     # insert_balance(balance=balance, address=address, clmn=block_num)
 
 
@@ -92,33 +85,48 @@ def save_address_to_database():
 
 
 def main_get_balances():
-    list_th_get_address = []
-    query = "SELECT Address FROM test"
-    cursor.execute(query)
-    results = cursor.fetchall()
-    max_threads = 5
-    for j in range(0, 5, max_threads):
-        for i in range(max_threads):
-            for row in results:
-                mythread = threading.Thread(target=get_balance, args=(row[0], j + i))
-                list_th_get_address.append(mythread)
-        for i in list_th_get_address:
-            i.start()
-        for i in list_th_get_address:
-            i.join()
-        list_th_get_address = []
+    list_th_get_balance = []
+    max_threads = 10
+    while True:
+        try:
+            for j in range(0, 2, max_threads):
+                print(j)
+                for i in range(max_threads):
+                    mythread = threading.Thread(target=get_balance, args=(j + i,))
+                    list_th_get_balance.append(mythread)
+                for i in list_th_get_balance:
+                    i.start()
+                for i in list_th_get_balance:
+                    i.join()
+                handler_balance()
+                result_array = []
+                list_th_get_balance = []
+                break
+        except:
+            pass
 
-    print('BALANCE IS TRUE!')
+def handler_balance():
+    for i in result_array:
+        item = i[0]
+        insert_balance(item[0], item[1], item[2])
 
+
+def get_balance(block_num):
+    for row in list_address:
+        while 1:
+            try:
+                balance = w3.eth.get_balance(Web3.to_checksum_address(row[0]), block_num)
+                array = np.array([(row[0], int(balance), int(block_num)),])
+                result_array.append(array)
+                break
+            except Exception as e:
+                print(e)
 
 if __name__ == '__main__':
-    dtype = [('address', 'U50'), ('balance', 'f4'), ('blocknum', 'i4')]
-    result_array = np.empty((0,),dtype=dtype)
-
-
+    result_array = []
     address_wallet = set()
     smart_contracts = set()
-    # main_get_address()
+    main_get_address()
 
     conn = sqlite3.connect('Blockchain.db')
     cursor = conn.cursor()
@@ -128,7 +136,9 @@ if __name__ == '__main__':
             {", ".join(columns)}
         )
         '''
-    # save_address_to_database()
+    save_address_to_database()
+    query = "SELECT Address FROM test"
+    cursor.execute(query)
+    list_address = cursor.fetchall()
     main_get_balances()
-    print(result_array)
     # READ ADDRESS FROM DATABASE
