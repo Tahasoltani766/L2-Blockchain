@@ -15,7 +15,7 @@ if __name__ == "__main__":
         )
         '''
     cursor.execute(create_table_query)
-    sqlite_insert_query = """INSERT INTO test
+    sqlite_insert_query = """INSERT INTO address_wallet
                               (Address) 
                                VALUES 
                               ('0x0000000000000000000000000000000000')"""

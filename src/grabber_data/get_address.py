@@ -45,16 +45,14 @@ def checker_smart_contract(address):
 
 def insert_address(addr: str):
     cursor.execute(create_table_query)
-    sqlite_insert_query = """INSERT INTO test (Address) VALUES (?)"""
+    sqlite_insert_query = """INSERT INTO address_wallet (Address) VALUES (?)"""
     cursor.execute(sqlite_insert_query, (addr,))
     conn.commit()
-
-    # insert_balance(balance=balance, address=address, clmn=block_num)
 
 
 def insert_balance(address, balance, clmn):
     update_query = f'''
-    UPDATE test
+    UPDATE address_wallet
     SET "{clmn}" = ?
     WHERE address = ?
     '''
@@ -137,7 +135,7 @@ if __name__ == '__main__':
         )
         '''
     save_address_to_database()
-    query = "SELECT Address FROM test"
+    query = "SELECT Address FROM address_wallet"
     cursor.execute(query)
     list_address = cursor.fetchall()
     main_get_balances()
