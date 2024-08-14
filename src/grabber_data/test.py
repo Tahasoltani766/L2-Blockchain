@@ -63,7 +63,6 @@ class GrabberData:
                 self.checker_address_type(i['from'])
                 self.checker_address_type(i['to'])
             self.get_logs(trx.transactions[0]['blockHash'].hex())
-            print(self.smart_contract)
         except:
             with open('last_block.txt', 'w') as file:
                 file.write(str(block_number))
@@ -72,8 +71,9 @@ class GrabberData:
         logs_block = w3.eth.get_logs({'blockHash': block_hash})
         for log in logs_block:
             trx = w3.eth.get_transaction_receipt(log['transactionHash'])
-            result = client.make_request("trace_transaction", trx['transactionHash'])
+            result = client.make_request("trace_transaction", [trx['transactionHash'].hex()])
             data = result['result']
+            print(data)
             for item in data['action']:
                 self.checker_address_type(item['to'])
                 self.checker_address_type(item['from'])
@@ -137,7 +137,7 @@ class GrabberData:
 def run_data():
     conn = sqlite3.connect('Blockchain.db')
     cursor = conn.cursor()
-    columns = ["Address TEXT PRIMARY KEY"] + [f'"{i}" TEXT' for i in range(1998000, 2000000)]
+    columns = ["Address TEXT PRIMARY KEY"] + [f'"{i}" TEXT' for i in range(1998000, 1999000)]
     create_table_query = f'''
     CREATE TABLE IF NOT EXISTS smart_contract (
         {", ".join(columns)}
@@ -150,5 +150,5 @@ def run_data():
 if __name__ == '__main__':
     run_data()
     grabber_data = GrabberData()
-    # grabber_data.main_get_address()
-    grabber_data.main_get_balances()
+    grabber_data.main_get_address()
+    # grabber_data.main_get_balances()
