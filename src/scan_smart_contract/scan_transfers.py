@@ -20,8 +20,8 @@ class ScanAddress:
         self.smart_contract_txs = []
         self.cursor = conn.cursor()
 
-    def get_logs(self):
-        logs = self.theater_contract.events.Transfer().get_logs(fromBlock=w3.eth.block_number, toBlock='latest')
+    def get_logs(self,block_num):
+        logs = self.theater_contract.events.Transfer().get_logs(fromBlock=block_num, toBlock='latest')
         for log in logs:
             if log.args.src == UNISWAP_CONTRACT_ADDRESS or log.args.dst == UNISWAP_CONTRACT_ADDRESS:
                 wad = copy.copy(log.args.wad)
@@ -60,13 +60,13 @@ class ScanAddress:
             self.cursor.execute('''
                 INSERT INTO "WETH-SMART-CONTRACT" (address, smart_contract, amount, block_number)
                 VALUES (?, ?, ?, ?)
-            ''', (entry['address'], entry['smart_contract'], entry['amount'], entry['blockNumber']))
+            ''', (entry['address'], entry['smart_contract'], str(entry['amount']), entry['blockNumber']))
             print('SMART contract is inserted')
         for entry in self.address_wallet_txs:
             self.cursor.execute('''
                             INSERT INTO "WETH-ADDRESS" (address, smart_contract, amount, block_number)
                             VALUES (?, ?, ?, ?)
-                        ''', (entry['address'], entry['smart_contract'], entry['amount'], entry['blockNumber']))
+                        ''', (entry['address'], entry['smart_contract'], str(entry['amount']), entry['blockNumber']))
             print('address  wallet is inserted')
 
         conn.commit()
@@ -90,17 +90,16 @@ class ScanAddress:
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             address TEXT NOT NULL,
             smart_contract TEXT NOT NULL,
-            amount REAL NOT NULL,
+            amount TEXT NOT NULL,
             block_number INTEGER NOT NULL
         )
         ''')
 
         self.cursor.execute('''
         CREATE TABLE IF NOT EXISTS "WETH-SMART-CONTRACT" (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
             address TEXT NOT NULL,
             smart_contract TEXT NOT NULL,
-            amount REAL NOT NULL,
+            amount TEXT NOT NULL,
             block_number INTEGER NOT NULL
         )
         ''')
@@ -110,4 +109,8 @@ class ScanAddress:
 
 if __name__ == '__main__':
     sa = ScanAddress()
-    sa.get_logs()
+    block_num = w3.eth.block_number
+    for i in range(block_num - 10, block_num):
+        sa.get_logs(i)
+
+

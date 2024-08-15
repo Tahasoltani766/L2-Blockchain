@@ -18,6 +18,7 @@ class GrabberData:
         self.cursor.execute(query)
         self.list_address = self.cursor.fetchall()
 
+
     def main_get_address(self):
         list_th_get_address = []
         for j in range(1998000, 1998040, self.max_threads):
