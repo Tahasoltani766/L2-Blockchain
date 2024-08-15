@@ -58,10 +58,14 @@ class GrabberData:
     def get_address(self, block_number):
         try:
             trx = w3.eth.get_block(block_number, full_transactions=True)
+            print("ok1")
             for i in trx.transactions:
                 self.checker_address_type(i['from'])
+                print("ok2.1")
                 self.checker_address_type(i['to'])
+                print("ok2.2")
             self.get_logs(trx.transactions[0]['blockHash'].hex())
+            print("ok3")
         except:
             print("error is here bitch")
             with open('last_block.txt', 'w') as file:
