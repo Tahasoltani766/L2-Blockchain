@@ -7,7 +7,7 @@ from web3 import HTTPProvider, Web3
 
 class GrabberData:
     def __init__(self):
-        self.max_threads = 10
+        self.max_threads = 1
         self.address_wallet = set()
         self.smart_contract = set()
         self.result_array = np.array([])
