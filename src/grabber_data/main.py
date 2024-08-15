@@ -68,6 +68,7 @@ class GrabberData:
 
     def get_logs(self, block_hash):
         logs_block = w3.eth.get_logs({'blockHash': block_hash})
+        print(logs_block)
         for log in logs_block:
             trx = w3.eth.get_transaction_receipt(log['transactionHash'])
             result = client.make_request("trace_transaction", [trx['transactionHash']])
