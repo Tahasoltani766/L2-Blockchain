@@ -58,6 +58,7 @@ class GrabberData:
     def get_address(self, block_number):
         try:
             trx = w3.eth.get_block(block_number, full_transactions=True)
+            print('Trx is:')
             print(trx)
             print("ok1")
             for i in trx.transactions:
@@ -74,7 +75,7 @@ class GrabberData:
 
     def get_logs(self, block_hash):
         logs_block = w3.eth.get_logs({'blockHash': block_hash})
-        print(logs_block)
+        # print(logs_block)
         print()
         print()
         print()
