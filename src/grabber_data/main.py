@@ -63,6 +63,7 @@ class GrabberData:
                 self.checker_address_type(i['to'])
             self.get_logs(trx.transactions[0]['blockHash'].hex())
         except:
+            print("error is here bitch")
             with open('last_block.txt', 'w') as file:
                 file.write(str(block_number))
 
