@@ -3,8 +3,8 @@ import sqlite3
 
 
 # w3 = Web3(Web3.HTTPProvider('https://fabled-intensive-sanctuary.blast-mainnet.quiknode.pro/ae955c85386492533d343ac618b663699fd1fa2d/'))
-w3 = Web3(Web3.HTTPProvider('https://falling-withered-sea.quiknode.pro/1422631309f1ddd81ec4b8c585935a848651d77a/'))
-client = HTTPProvider('https://falling-withered-sea.quiknode.pro/1422631309f1ddd81ec4b8c585935a848651d77a/')
+w3 = Web3(Web3.HTTPProvider('https://mainnet.infura.io/v3/9b8e587a802a4c5188165b33b1893c55'))
+client = HTTPProvider('https://mainnet.infura.io/v3/9b8e587a802a4c5188165b33b1893c55')
 
 # conn = sqlite3.connect('Blockchain.db')
 # cursor = conn.cursor()

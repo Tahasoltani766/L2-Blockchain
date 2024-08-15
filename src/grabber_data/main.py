@@ -1,17 +1,151 @@
+import threading
 import numpy as np
-
-result = np.array(
-    [['0xC8d8E393825CCC50c07447ecC7767278F6318a82', '0', '11'],
-     ['0xC8d8E393825CCC50c07447ecC7767278F6318a82', '0', '5'],
-     ['0xC8d8E393825CCC50c07447ecC7767278F6318a82', '0', '3'],
-     ['0xD90A698a012F4a785E4405e415611d3805ffcF7f', '0', '7'],
-     ['0x4d646258983E741eD3228f43579ba5E827008e9F', '0', '7'],
-     ['0x103e37ad040437420f53c1c5a2869AC1D6149331', '0', '7']])
+from constants import w3, client
+import sqlite3
+from web3 import HTTPProvider, Web3
 
 
-def insert_balance(x, v, g):
-    print(x, v, g)
+class GrabberData:
+    def __init__(self):
+        self.max_threads = 10
+        self.address_wallet = set()
+        self.smart_contract = set()
+        self.result_array = np.array([])
+        self.list_th_get_balance = []
+        self.conn = sqlite3.connect('Blockchain.db')
+        self.cursor = self.conn.cursor()
+        query = "SELECT Address FROM eth_smart_contract"
+        self.cursor.execute(query)
+        self.list_address = self.cursor.fetchall()
 
 
-for item in result:
-    insert_balance(item[0], item[1], item[2])
+    def main_get_address(self):
+        list_th_get_address = []
+        for j in range(1998000, 1998040, self.max_threads):
+            for i in range(self.max_threads):
+                print(i + j)
+                my_threads = threading.Thread(target=self.get_address, args=(i + j,))
+                list_th_get_address.append(my_threads)
+            for i in list_th_get_address:
+                i.start()
+            for i in list_th_get_address:
+                i.join()
+            list_th_get_address = []
+            # self.save_address_to_database()
+            self.save_address_to_database(self.smart_contract)
+    def save_address_to_database(self,list_address):
+        for j in list_address:
+            self.insert_smart_contract(j)
+
+    def insert_smart_contract(self, addr: str):
+        try:
+            sqlite_insert_query = """INSERT INTO eth_smart_contract (Address) VALUES (?)"""
+            self.cursor.execute(sqlite_insert_query, (addr,))
+            self.conn.commit()
+            print('Inserted')
+        except sqlite3.IntegrityError:
+            pass
+
+
+    def insert_address_wallet(self, addr: str):
+        try:
+            sqlite_insert_query = """INSERT INTO address_wallet (Address) VALUES (?)"""
+            self.cursor.execute(sqlite_insert_query, (addr,))
+            self.conn.commit()
+        except sqlite3.IntegrityError:
+            pass
+
+    def get_address(self, block_number):
+        try:
+            trx = w3.eth.get_block(block_number, full_transactions=True)
+            for i in trx.transactions:
+                self.checker_address_type(i['from'])
+                self.checker_address_type(i['to'])
+            self.get_logs(trx.transactions[0]['blockHash'].hex())
+        except:
+            with open('last_block.txt', 'w') as file:
+                file.write(str(block_number))
+
+    def get_logs(self, block_hash):
+        logs_block = w3.eth.get_logs({'blockHash': block_hash})
+        for log in logs_block:
+            trx = w3.eth.get_transaction_receipt(log['transactionHash'])
+            result = client.make_request("trace_transaction", [trx['transactionHash']])
+            print(result)
+            data = result['result']
+            for item in data['action']:
+                self.checker_address_type(item['to'])
+                self.checker_address_type(item['from'])
+
+    def checker_address_type(self, address):
+        check = w3.eth.get_code(w3.to_checksum_address(address))
+        if check == b'':
+            self.address_wallet.add(address)
+        else:
+            self.smart_contract.add(address)
+
+    def main_get_balances(self):
+        for j in range(1998000, 1998040, self.max_threads):
+            for i in range(self.max_threads):
+                my_thread = threading.Thread(target=self.get_balance, args=(j + i,))
+                print(j + i)
+                self.list_th_get_balance.append(my_thread)
+            for i in self.list_th_get_balance:
+                i.start()
+            for i in self.list_th_get_balance:
+                i.join()
+            self.list_th_get_balance = []
+            self.handler_balance()
+            self.result_array = np.array([])
+
+    def handler_balance(self):
+        for item in self.result_array:
+            self.insert_balance(item[0], item[1], item[2])
+
+    def insert_balance(self, address, balance, block_num):
+        balance_str = str(balance)
+        update_query = f'''
+        UPDATE smart_contract
+        SET "{block_num}" = ?
+        WHERE address = ?
+        '''
+        self.cursor.execute(update_query, (balance_str, address))
+        self.conn.commit()
+
+    def get_balance(self, block_num):
+        for row in self.list_address:
+            while True:
+                try:
+                    balance = w3.eth.get_balance(Web3.to_checksum_address(row[0]), block_num)
+                    print(balance)
+                    array = np.array([(row[0], int(balance), int(block_num)), ])
+                    if self.result_array.size == 0:
+                        self.result_array = array
+                    else:
+                        self.result_array = np.vstack((self.result_array, array))
+                        # print(self.result_array)
+                    break
+                except Exception as e:
+                    # print(e)
+                    continue
+
+
+def run_data():
+    conn = sqlite3.connect('Blockchain.db')
+    cursor = conn.cursor()
+    columns = ["Address TEXT PRIMARY KEY"] + [f'"{i}" TEXT' for i in range(1998000, 1999000)]
+    create_table_query = f'''
+    CREATE TABLE IF NOT EXISTS eth_smart_contract (
+        {", ".join(columns)}
+    )
+    '''
+    cursor.execute(create_table_query)
+    conn.commit()
+    print('Created table')
+
+
+if __name__ == '__main__':
+    run_data()
+    grabber_data = GrabberData()
+    grabber_data.main_get_address()
+    # grabber_data.main_get_balances()
