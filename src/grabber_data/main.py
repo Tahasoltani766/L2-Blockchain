@@ -4,7 +4,7 @@ import numpy as np
 from constants import w3, client
 import sqlite3
 from web3 import HTTPProvider, Web3
-
+import os
 
 class GrabberData:
     def __init__(self):
@@ -69,9 +69,14 @@ class GrabberData:
             self.get_logs(trx.transactions[0]['blockHash'].hex())
             print("ok3")
         except:
+            try:
+                os.system("clear")
+            except:
+                os.system("CLEAR")
             print("error is here bitch")
             print('Trx is:')
             pprint.pprint(trx)
+            exit()
             with open('last_block.txt', 'w') as file:
                 file.write(str(block_number))
 
