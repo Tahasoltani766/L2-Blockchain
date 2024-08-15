@@ -58,6 +58,7 @@ class GrabberData:
     def get_address(self, block_number):
         try:
             trx = w3.eth.get_block(block_number, full_transactions=True)
+            print(trx)
             print("ok1")
             for i in trx.transactions:
                 self.checker_address_type(i['from'])
