@@ -64,5 +64,5 @@ class ScanSmartContract:
 
 
 ssc = ScanSmartContract()
-ssc.get_logs('0xb8a3f7f5cfc1748f91a684f20fe89031202cbadcd15078c49b85ec2a57f43853')
+ssc.get_logs('0xfb4f2fc9c8dcb96c17a881e2fd56ab4d44b92cd314f33fe211fcbfd24f587fb4')
 # ssc.scan_trx()
