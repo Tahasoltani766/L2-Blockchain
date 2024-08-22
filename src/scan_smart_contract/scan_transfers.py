@@ -128,7 +128,7 @@ def main_real_time():
 
 if __name__ == '__main__':
     freeze_support()
-    # sa = ScanAddress()
-    # block_num = w3.eth.block_number
-    # sa.get_logs(block_num - 10)
-    main_real_time()
+    sa = ScanAddress()
+    block_num = w3.eth.block_number
+    sa.get_logs(block_num - 10)
+    # main_real_time()
