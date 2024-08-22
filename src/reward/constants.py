@@ -15,7 +15,6 @@ client = HTTPProvider('https://proportionate-magical-hexagon.quiknode.pro/8b1ced
 #                {", ".join(columns)}
 #            )
 #            '''
-#
 # cursor.execute(create_table_query)
 
 conn = mysql.connector.connect(

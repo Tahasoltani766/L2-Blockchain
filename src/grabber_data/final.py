@@ -1,24 +1,25 @@
 import threading
+import time
 import numpy as np
-from constants import w3, client, cursor, create_table_query, conn
-import sqlite3
+from src.grabber_data.constants import w3, client, cursor, create_table_query, conn
 from web3 import HTTPProvider, Web3
 
 
 class GrabberData:
     def __init__(self):
-        self.max_threads = 3
+        self.max_threads = 10
         self.address_wallet = set()
         self.smart_contract = set()
         self.result_array = np.array([])
         self.list_th_get_balance = []
-        query = "SELECT Address FROM my_table"
+        query = "SELECT Address FROM eth_balance"
         cursor.execute(query)
         self.list_address = cursor.fetchall()
+        self.block_now = w3.eth.get_block('latest')
 
     def main_get_address(self):
         list_th_get_address = []
-        for j in range(20553975, 20553978, self.max_threads):
+        for j in range(10000000, self.block_now['number'], self.max_threads):
             for i in range(self.max_threads):
                 my_threads = threading.Thread(target=self.get_address, args=(i + j,))
                 print(i + j)
@@ -37,7 +38,7 @@ class GrabberData:
 
     def insert_address(self, addr: str):
         cursor.execute(create_table_query)
-        sqlite_insert_query = """INSERT INTO my_table (Address) VALUES (%s)"""
+        sqlite_insert_query = """INSERT INTO eth_balance (Address) VALUES (%s)"""
         cursor.execute(sqlite_insert_query, (addr,))
         conn.commit()
         print('INSER ADDRESS :', addr)
@@ -74,7 +75,7 @@ class GrabberData:
             self.smart_contract.add(address)
 
     def main_get_balances(self):
-        for j in range(20553975, 20553978, self.max_threads):
+        for j in range(20553975, 20553985, self.max_threads):
             for i in range(self.max_threads):
                 my_thread = threading.Thread(target=self.get_balance, args=(j + i,))
                 print(j + i)
@@ -93,7 +94,7 @@ class GrabberData:
 
     def insert_balance(self, address, balance, block_num):
         update_query = f'''
-        UPDATE my_table
+        UPDATE eth_balance
         SET `{block_num}` = %s
         WHERE Address = %s
         '''
@@ -118,8 +119,45 @@ class GrabberData:
 
         conn.commit()
 
+    def clean_null_data(self):
+        cursor.execute("SELECT * FROM eth_balance")
+        rows = cursor.fetchall()
+        column_names = [description[0] for description in cursor.description]  # Use index 0 for column names
 
-if __name__ == '__main__':
+        colcount = len(column_names)
+
+        for row in rows:
+            updated_row = dict()
+            for i in range(colcount):
+                if row[i] is None:
+                    j = i + 1
+                    while j < colcount:
+                        if row[j] is not None:
+                            updated_row[column_names[i]] = row[j]
+                            break
+                        j += 1
+                    else:
+                        updated_row[column_names[i]] = 0
+
+            if updated_row:  # Update only if there are changes
+                update_query = f"""
+                               UPDATE eth_balance
+                               SET {', '.join(f'`{col}` = %s' for col in updated_row)}
+                               WHERE id = %s
+                               """
+                cursor.execute(update_query,
+                               (*updated_row.values(), row[0]))  # Assuming 'id' is the first column in 'row'
+                conn.commit()
+
+
+def main_grabber_data():
     grabber_data = GrabberData()
-    # grabber_data.main_get_address()
+    print("Start Get Address")
+    grabber_data.main_get_address()
+    time.sleep(5)
+    print('Start Get balances')
     grabber_data.main_get_balances()
+    print('Start clean Table')
+    grabber_data.clean_null_data()
+
+main_grabber_data()

@@ -1,13 +1,11 @@
-import os
-import sqlite3
-import time
 from collections import defaultdict
 from pprint import pprint
 from web3 import Web3, HTTPProvider
-import numpy as np
+from data import data , test_data
 
-w3 = Web3(Web3.HTTPProvider('https://black-convincing-patron.quiknode.pro/7c8c6aa9c9f5b3b026ce52bbad53f06695ab6b82/'))
-client = HTTPProvider('https://black-convincing-patron.quiknode.pro/7c8c6aa9c9f5b3b026ce52bbad53f06695ab6b82/')
+w3 = Web3(
+    Web3.HTTPProvider('https://proportionate-magical-hexagon.quiknode.pro/8b1cedff54880ad8d4b1d521dfe4bc6756a2d165'))
+client = HTTPProvider('https://proportionate-magical-hexagon.quiknode.pro/8b1cedff54880ad8d4b1d521dfe4bc6756a2d165')
 
 
 class ScanSmartContract:
@@ -31,9 +29,8 @@ class ScanSmartContract:
                             'blockNumber': item['blockNumber']})
                 except Exception as e:
                     print(e)
-        print('RUN SCAN TRX')
         pprint(self.extracted_data)
-        self.scan_trx()
+        # self.scan_trx()
 
     def scan_trx(self):
         results = {}
@@ -56,7 +53,6 @@ class ScanSmartContract:
             print(f"res_balance: {res_balance}")
             print(f"delta_balance: {delta_balance}")
             print('-----------------------------------------')
-
         self.extracted_data = []
 
     def get_tokens(self):
@@ -64,5 +60,24 @@ class ScanSmartContract:
 
 
 ssc = ScanSmartContract()
-ssc.get_logs('0xfb4f2fc9c8dcb96c17a881e2fd56ab4d44b92cd314f33fe211fcbfd24f587fb4')
-# ssc.scan_trx()
+# ssc.get_logs('0xb8a3f7f5cfc1748f91a684f20fe89031202cbadcd15078c49b85ec2a57f43853')
+ssc.scan_trx()
+
+
+def check_address(self, data):
+    for i in data:
+        check = w3.eth.get_code(w3.to_checksum_address(i['address']))
+        if check == b'':
+            self.address_wallet_txs.append(i)
+        else:
+            self.smart_contract_txs.append(i)
+    def handler_data(self):
+        summary = defaultdict(lambda: {'amount': 0, 'blockNumber': 0})
+        for entry in self.list_txs:
+            key = (entry['address'], entry['smart_contract'])
+            summary[key]['amount'] += entry['amount']
+            summary[key]['blockNumber'] = entry['blockNumber']
+        result = [{'address': k[0], 'smart_contract': k[1], 'amount': v['amount'], 'blockNumber': v['blockNumber']} for
+                  k, v in
+                  summary.items()]
+        return result
