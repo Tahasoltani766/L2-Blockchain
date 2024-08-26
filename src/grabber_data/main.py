@@ -162,7 +162,6 @@ class RealTime:
         pass
     def get_logs(self, block_hash):
         txs = w3.eth.get_block(block_hash, True)
-        print(txs)
         for i in txs["transactions"]:
             trx_reciept = client.make_request("trace_transaction", [i['hash']])
             for item in trx_reciept['result']:

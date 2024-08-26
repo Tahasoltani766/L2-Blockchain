@@ -62,9 +62,7 @@ def analyse_logs(logs):
                     'blockNumber': block_num
                 }
     pprint.pprint(data_dict)
-
-
-
+    data_dict = dict()
 
 def get_historical_transfer(iteration, start_block, end_block, block_cur):
     th_list = []
