@@ -2,8 +2,7 @@ import os
 from web3 import Web3, HTTPProvider
 from dotenv import load_dotenv
 from web3.middleware import geth_poa_middleware
-import asyncio
-
+import threading
 
 load_dotenv()
 w3_url = os.getenv('QUICKNODE_URL')
@@ -16,20 +15,32 @@ with open("../ABI/PancakeSwap.abi", "r") as f:
     f.close()
 
 token_contract = web3.eth.contract(abi=abi, address=web3.to_checksum_address(os.getenv("CONTRACT_ADDRESS")))
-event_filter = token_contract.events.BetBull.create_filter(fromBlock="latest")
 
-
-async def handle_event(event):
+def handle_event(event):
     print(event)
 
 
-async def main():
+def main(filter_func):
+    event = getattr(token_contract.events, filter_func)
+    event_filter = event.create_filter(fromBlock="latest")
     while True:
         events = event_filter.get_new_entries()
         for event in events:
-            await handle_event(event)
-        await asyncio.sleep(10)
+            handle_event(event)
+        # asyncio.sleep(10)
 
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(main())
+if __name__ == '__main__':
+    my_th_cliam = threading.Thread(target=main, args=('Claim',))
+    my_th_bet_bull = threading.Thread(target=main, args=('BetBull',))
+    my_th_bet_bear = threading.Thread(target=main, args=('BetBear',))
+
+    my_th_cliam.start()
+    my_th_bet_bear.start()
+    my_th_bet_bull.start()
+
+    my_th_cliam.join()
+    my_th_bet_bear.join()
+    my_th_bet_bull.join()
+
+
