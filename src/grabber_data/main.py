@@ -51,7 +51,6 @@ class GrabberData:
 
     def get_address(self, block_number):
         try:
-            print(f'START BLOCKNUMBER-{block_number}')
             trx = w3.eth.get_block(block_number, full_transactions=True)
             for i in trx.transactions:
                 self.checker_address_type(i['from'])
@@ -173,7 +172,8 @@ class RealTime:
                     else:
                         balance = w3.eth.get_balance(Web3.to_checksum_address(action['from']), block_num)
                         if balance != 0:
-                            input_queue.put({'Address': action['from'], 'Value': balance, 'BlockNumber': block_num})
+                            print({'Address': action['from'], 'Value': balance, 'BlockNumber': block_num})
+                            # input_queue.put({'Address': action['from'], 'Value': balance, 'BlockNumber': block_num})
                 except Exception as e:
                     print(e)
 

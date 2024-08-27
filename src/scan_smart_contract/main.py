@@ -100,7 +100,7 @@ def main_real_time():
         loop.close()
 
 if __name__ == "__main__":
-    # block_now = web3.eth.block_number
-    # get_historical_transfer(2, block_now - 100, block_now, block_now)
-    # pprint.pprint(data_dict)
+    block_now = web3.eth.block_number
+    get_historical_transfer(2, block_now - 100, block_now, block_now)
+    pprint.pprint(data_dict)
     main_real_time()
